@@ -35,5 +35,27 @@ app.post('/tasks',(req,res) => {
     res.status(201).json(newTask)
 
 })
+app.put('/tasks/:id',(req,res) => {
+    const task = tasks.find(i => i.id == req.params.id)
+    if(!task){
+        return res.status(404).json({"error" : `Task ${req.params.id} not found`});
+    }
+    const titleUpdate = req.body.title;
+    if(!titleUpdate || titleUpdate.trim() == ""){
+        return res.status(400).json({ "error": "title is required" })
+    }
+    task.title = titleUpdate;
+    task.done = req.body.done !== undefined ? req.body.done : task.done;
+    res.status(200).json(task);
+
+})
+app.delete('/tasks/:id',(req,res)=>{
+    const taskIndex = tasks.findIndex(i => i.id == req.params.id)
+    if(taskIndex === -1){
+        return res.status(404).json({"error" : `Task ${req.params.id} not found`});
+    }
+    tasks.splice(taskIndex,1);
+    res.status(204).send();
+})
 app.listen(port, () => console.log(`its alive on http://localhost:${port}`));
 
