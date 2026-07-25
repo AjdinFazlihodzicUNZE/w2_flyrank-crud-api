@@ -31,7 +31,7 @@ app.get('/tasks',(req,res) => {
     res.json(tasksDb);
 })
 app.get('/tasks/:id',(req,res) => {
-    const task = tasks.find(i => i.id == req.params.id)
+    const task = db.prepare(`SELECT * FROM tasks WHERE id = ?`).get(req.params.id);
     if(!task){
         return res.status(404).json({"error" : `Task ${req.params.id} not found`});
     }
