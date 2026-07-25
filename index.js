@@ -42,10 +42,13 @@ app.post('/tasks',(req,res) => {
     if(!title || title.trim() == ""){
         return res.status(400).json({ "error": "title is required" })
     }
-    const newTask = {id : tasks.length+1,title: title, done: false };
-    tasks.push(newTask);
+    const result = db.prepare(`INSERT INTO tasks (title,done) VALUES (?,?)`).run(title,0);
+    const newTask = {
+    id: result.lastInsertRowid,
+    title: title,
+    done: 0
+    };
     res.status(201).json(newTask)
-
 })
 app.put('/tasks/:id',(req,res) => {
     const task = tasks.find(i => i.id == req.params.id)
