@@ -1,16 +1,24 @@
 const express = require('express');
-const app = express();
-app.use(express.json());
+const Database = require('better-sqlite3');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./openapi.json');
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+const db = new Database('tasks.db');
+const app = express();
 const port = 3000;
 
-tasks = [
-    {"id" : 1,"title":"Task1","done":true},
-    {"id" : 2,"title":"Task2","done":false},
-    {"id" : 3,"title":"Task3","done":false},
-]
+app.use(express.json());
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+db.exec(`CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    done INTEGER DEFAULT 0
+    )`)
+const count = db.prepare('SELECT COUNT(*) As total FROM tasks').get().total;
+if(count === 0){
+    db.exec(`INSERT INTO tasks(title,done) VALUES ('Ajdin',0),('Dzejlan',0 ),('Medin',0)`)
+    console.log("First three tasks added");
+}
 
 app.get('/',(req,res)=>{
     res.json({ "name": "Task API", "version": "1.0", "endpoints": ["/tasks"] });
@@ -19,7 +27,8 @@ app.get('/health',(req,res) => {
     res.json({"status" : "ok"})
 })
 app.get('/tasks',(req,res) => {
-    res.json(tasks);
+    const tasksDb = db.prepare('SELECT * FROM tasks').all();
+    res.json(tasksDb);
 })
 app.get('/tasks/:id',(req,res) => {
     const task = tasks.find(i => i.id == req.params.id)
@@ -60,5 +69,6 @@ app.delete('/tasks/:id',(req,res)=>{
     tasks.splice(taskIndex,1);
     res.status(204).send();
 })
+
 app.listen(port, () => console.log(`its alive on http://localhost:${port}`));
 
