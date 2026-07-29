@@ -39,3 +39,9 @@ curl -i -X POST http://localhost:3000/tasks -H "Content-Type: application/json" 
 \`\`\`
 
 Returns a 201 with the new task.
+
+## Docker Setup
+To start the PostgreSQL database container:
+```bash
+docker run --name taskdb -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=tasks -p 5432:5432 -v taskdata:/var/lib/postgresql -d postgres 
+```
