@@ -1,24 +1,18 @@
 const express = require('express');
-const Database = require('better-sqlite3');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./openapi.json');
-const db = new Database('tasks.db');
+const { pool, initDb } = require('./db');
 const app = express();
 const port = 3000;
 
 app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-db.exec(`CREATE TABLE IF NOT EXISTS tasks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    done INTEGER DEFAULT 0
-    )`)
-const count = db.prepare('SELECT COUNT(*) As total FROM tasks').get().total;
-if(count === 0){
-    db.exec(`INSERT INTO tasks(title,done) VALUES ('Ajdin',0),('Dzejlan',0 ),('Medin',0)`)
-    console.log("First three tasks added");
-}
+initDb().then(() => {
+  console.log('Connected to Postgres successfully');
+}).catch((err) => {
+  console.error('Failed to load Postgres DB:', err);
+}); 
 
 app.get('/',(req,res)=>{
     res.json({ "name": "Task API", "version": "1.0", "endpoints": ["/tasks"] });
