@@ -20,16 +20,30 @@ app.get('/',(req,res)=>{
 app.get('/health',(req,res) => {
     res.json({"status" : "ok"})
 })
-app.get('/tasks',(req,res) => {
-    const tasksDb = db.prepare('SELECT * FROM tasks').all();
-    res.json(tasksDb);
-})
-app.get('/tasks/:id',(req,res) => {
-    const task = db.prepare(`SELECT * FROM tasks WHERE id = ?`).get(req.params.id);
-    if(!task){
-        return res.status(404).json({"error" : `Task ${req.params.id} not found`});
+app.get('/tasks',async(req,res) => {
+    try {
+    const result = await pool.query('SELECT * FROM tasks ORDER BY id ASC');
+    res.json(result.rows);
+    } catch (err) {
+    console.error('Error fetching tasks:', err);
+    res.status(500).json({ error: 'Internal server error' });
     }
-    res.json(task);
+})
+app.get('/tasks/:id',async(req,res) => {
+    try {
+    const taskId = req.params.id;
+   
+    const result = await pool.query('SELECT * FROM tasks WHERE id = $1', [taskId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching task:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 })
 app.post('/tasks',(req,res) => {
     const title = req.body.title;
