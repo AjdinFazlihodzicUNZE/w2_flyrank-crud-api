@@ -43,7 +43,7 @@ automatically on first run — nothing to set up by hand.
 Once the server's running, go to http://localhost:3000/docs to test everything
 in the browser instead of using curl.
 
-![Swagger UI screenshot](.swagger-screenshot.png)
+![Swagger UI screenshot](./swagger-screenshot.png)
 
 
 ## Example request
